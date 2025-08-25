@@ -7,6 +7,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.text.NumberFormat;
+import java.util.List;
+
 @Mapper
 public interface PropostaMapper {
 
@@ -30,8 +33,15 @@ public interface PropostaMapper {
     @Mapping(source = "usuario.cpf", target = "cpf")
     @Mapping(source = "usuario.telefone", target = "telefone")
     @Mapping(source = "usuario.renda", target = "renda")
+    @Mapping(target = "valorSolicitadoFmt", expression = "java(setValorSolicitadoFmt(proposta))")
     PropostaResponse convertEntityToDto(Proposta proposta);
 
+
+    List<PropostaResponse> convertListEntityToListDto(List<Proposta> propostas);
+
+    default String setValorSolicitadoFmt(Proposta proposta){
+        return NumberFormat.getCurrencyInstance().format(proposta.getValorSolicitado());
+    }
 
 
 }
