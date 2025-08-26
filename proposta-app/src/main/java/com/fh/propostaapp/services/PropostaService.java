@@ -13,28 +13,36 @@ import java.util.List;
 public class PropostaService {
 
     private final PropostaRepository repository;
-    private final NotificacaoService notificacaoService;
+    private final NotificacaoRabbitMQService notificacaoService;
 
-    public PropostaService(PropostaRepository repository, NotificacaoService notificacaoService) {
+    public PropostaService(PropostaRepository repository, NotificacaoRabbitMQService notificacaoService) {
         this.repository = repository;
         this.notificacaoService = notificacaoService;
     }
 
     public PropostaResponse createProposta(PropostaRequest request) {
-
         Proposta proposta = PropostaMapper.INSTANCE.convertDtoToProposta(request);
         repository.save(proposta);
-
-        PropostaResponse propostaResponse = PropostaMapper.INSTANCE.convertEntityToDto(proposta);
-        notificacaoService.notificar(propostaResponse);
-
-        return propostaResponse;
+        notificarRabbitMQ(proposta);
+        return PropostaMapper.INSTANCE.convertEntityToDto(proposta);
     }
-
 
     public List<PropostaResponse> getAll() {
         return PropostaMapper.INSTANCE.convertListEntityToListDto(repository.findAll());
     }
 
+    public List<Proposta> getAllByIntegradaIsFalse() {
+        return repository.findAllByIntegradaIsFalse();
+    }
+
+    public void notificarRabbitMQ(Proposta proposta) {
+        try{
+            notificacaoService.notificar(proposta);
+            proposta.setIntegrada(true);
+        } catch (RuntimeException e) {
+            proposta.setIntegrada(false);
+        }
+        repository.save(proposta);
+    }
 
 }
