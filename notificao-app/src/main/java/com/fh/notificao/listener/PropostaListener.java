@@ -7,11 +7,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PropostaPendenteListener {
+public class PropostaListener {
 
     private final NotificacaoSNSService notificacaoSNSService;
 
-    public PropostaPendenteListener(NotificacaoSNSService notificacaoSNSService) {
+    public PropostaListener(NotificacaoSNSService notificacaoSNSService) {
         this.notificacaoSNSService = notificacaoSNSService;
     }
 
