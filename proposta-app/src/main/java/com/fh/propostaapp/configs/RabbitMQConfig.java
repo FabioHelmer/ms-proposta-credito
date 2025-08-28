@@ -15,10 +15,19 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static String EXCHANGE_PROPOSTA_PENDENTE;
+    public static String EXCHANGE_PROPOSTA_CONCLUIDA;
+
+
 
     @Value("${rabbitmq.proposta-pendente.exchange}")
     public void setExchangePropostaPendente(String exchange) {
         EXCHANGE_PROPOSTA_PENDENTE = exchange;
+    }
+
+
+    @Value("${rabbitmq.proposta-concluida.exchange}")
+    public void setExchangePropostaConcluida(String exchange) {
+        EXCHANGE_PROPOSTA_CONCLUIDA = exchange;
     }
 
     @Bean
@@ -51,14 +60,17 @@ public class RabbitMQConfig {
 
     @Bean
     public ApplicationListener<ApplicationReadyEvent> inicializarAdmin(RabbitAdmin rabbitAdmin){
-        return event -> rabbitAdmin.initialize(
-
-        );
+        return event -> rabbitAdmin.initialize();
     }
 
     @Bean
     public FanoutExchange fanoutExchangePropostaPendente(){
         return ExchangeBuilder.fanoutExchange(EXCHANGE_PROPOSTA_PENDENTE).build();
+    }
+
+    @Bean
+    public FanoutExchange fanoutExchangePropostaConcluida(){
+        return ExchangeBuilder.fanoutExchange(EXCHANGE_PROPOSTA_CONCLUIDA).build();
     }
 
 
@@ -69,9 +81,21 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding bindingPropostaConcluidaPropostaApp(){
+        return BindingBuilder.bind(queuePropostaConcluidaProposta())
+                .to(fanoutExchangePropostaConcluida());
+    }
+
+    @Bean
     public Binding bindingPropostaPendenteNotificacao(){
         return BindingBuilder.bind(queuePropostaPendenteNotificacao())
                 .to(fanoutExchangePropostaPendente());
+    }
+
+    @Bean
+    public Binding bindingPropostaConcluidaNotificacao(){
+        return BindingBuilder.bind(queuePropostaConcluidaNotificacao())
+                .to(fanoutExchangePropostaConcluida());
     }
 
     @Bean
